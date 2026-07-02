@@ -14,6 +14,10 @@ module Trackbot
         post({content: content})
       end
 
+      def send_embed(embed)
+        post(embeds: [embed])
+      end
+
       private
 
       def post(payload)

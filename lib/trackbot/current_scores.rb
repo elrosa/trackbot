@@ -27,13 +27,20 @@ module Trackbot
     end
 
     def best_three_overall
-      top_by(:total_tally)
+      @best_three_overall ||= top_by(:total_tally)
+    end
+
+    def best_overall
+      best_three_overall.first
     end
 
     private
 
     def top_by(key, limit: 3)
-      scores.sort_by { |row| -row[key] }.first(limit)
+      scores
+        .select { |row| row[key] > 0 }
+        .sort_by { |row| -row[key] }
+        .first(limit)
     end
 
     def current_leaderboard
