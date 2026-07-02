@@ -1,0 +1,29 @@
+name: Daily Discord scores
+
+on:
+  schedule:
+    # 04:05 UTC = 00:05 AST (UTC-4)
+    - cron: "5 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  post-scores:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+
+      - name: Post scores to Discord
+        env:
+          TRACKBEAR_API_TOKEN: ${{ secrets.TRACKBEAR_API_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: ruby bin/discord
