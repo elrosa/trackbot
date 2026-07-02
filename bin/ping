@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+
+require "trackbot/trackbear/client"
+
+begin
+  data = Trackbot::Trackbear::Client.new.ping
+  puts "TrackBear API: OK (#{data.inspect})"
+rescue Trackbot::ApiError => e
+  warn "TrackBear API error: #{e.inspect}"
+  exit 1
+rescue KeyError => e
+  warn "Missing configuration: #{e.message}"
+  exit 1
+end
