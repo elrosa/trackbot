@@ -1,9 +1,6 @@
 name: Daily Discord scores
 
 on:
-  schedule:
-    # 04:05 UTC = 00:05 AST (UTC-4)
-    - cron: "5 4 * * *"
   workflow_dispatch:
 
 jobs:
