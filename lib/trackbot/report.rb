@@ -44,9 +44,11 @@ module Trackbot
         **#{scores.leaderboard_title}**
 
         **Yesterday's top writers**
+        
         #{format_rankings(scores.best_three_yesterday, :day_tally)}
 
         **Overall standings** (through #{format_date(scores.date)})
+        
         #{format_rankings(scores.best_three_overall, :total_tally)}
       MESSAGE
     end
