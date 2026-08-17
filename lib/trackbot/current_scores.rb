@@ -75,13 +75,13 @@ module Trackbot
 
     def day_tally_count(participant)
       participant["tallies"]
-        .select { |tally| tally["date"] == date.strftime("%Y-%m-%d") }
+        .select { |tally| tally["date"] == date.strftime("%Y-%m-%d") && tally["measure"] == "word" }
         .sum { |tally| tally["count"] }
     end
 
     def total_tally_count(participant)
       participant["tallies"]
-        .select { |tally| Date.parse(tally["date"]) <= date }
+        .select { |tally| Date.parse(tally["date"]) <= date && tally["measure"] == "word"}
         .sum { |tally| tally["count"] }
     end
   end
