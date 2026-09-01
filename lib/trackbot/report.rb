@@ -6,6 +6,24 @@ require_relative "discord/client"
 module Trackbot
   class Report
     attr_reader :scores, :discord_client
+    EMPTY_MESSAGES_YESTERDAY = [
+      "_No words logged._",
+      "_Silence of the drafts_",
+      "_\\*crickets\\*_",
+      "_\\*tumbleweed\\*_",
+      "_Rest day. Best day._",
+      "_Plot twist: nobody wrote anything yesterday._",
+      "_Fine. \\*sighs\\*. I'll just go write something myself._"
+    ].freeze
+
+    EMPTY_MESSAGES_OVERALL = [
+      "_Please remain on hold. Our writers will be with you shortly._",
+      "_No words written yet._",
+      "_The podium is empty._",
+      "_No scores yet._",
+      "_The month is young and so are ~~we~~ our wordcounts._",
+      "_Nothing to see here yet! But the month's not over._",
+    ].freeze
 
     def initialize
       @scores = Trackbot::CurrentScores.new
@@ -20,7 +38,7 @@ module Trackbot
     def no_leaderboard
       discord_client.send_message(
         <<~MESSAGE.strip
-          **TrackBot** could not find a leaderboard for current month.
+          **TrackBot** could not find a leaderboard for the current month.
 
           Magdaleno, ogarnij się!
         MESSAGE
@@ -41,37 +59,42 @@ module Trackbot
 
     def daily_message
       <<~MESSAGE.strip
-        **#{scores.leaderboard_title}**
-
-        **Yesterday's top writers**
-
+        ## #{scores.leaderboard_title}
+        ### Yesterday's top writers
         #{format_rankings(scores.best_three_yesterday, :day_tally)}
-
-        **Overall standings** (through #{format_date(scores.date)})
-
+        ### Overall standings (through #{format_date(scores.date)})
         #{format_rankings(scores.best_three_overall, :total_tally)}
+
       MESSAGE
     end
 
     def monthly_winner_embed(winner)
-      {
-        title: "🏆 #{scores.date.strftime("%B")} champion",
-        description: <<~DESC.strip,
-          ## #{winner[:display_name]}
-          #{winner[:total_tally]} words total
+      target_month = (scores.date >> 3).strftime("%B")
 
-          Congratulations! You won naming rights to next month's leaderboard!
-          (and a big pat on the back)
+      {
+        title: "#{scores.date.strftime("%B")} champion",
+        description: <<~DESC.strip,
+          # 👑 #{winner[:display_name]}
+          with **#{winner[:total_tally]}** words written!
+
+          You've earned the naming rights for the **#{target_month}** leaderboard!
+          *(and a well-deserved pat on the back)*
         DESC
         color: 0xFFD700
       }
     end
 
     def format_rankings(rows, tally_key)
-      return "_No scores yet._" if rows.empty?
+      if rows.empty?
+        if tally_key == :day_tally
+          return EMPTY_MESSAGES_YESTERDAY.sample
+        else
+          return EMPTY_MESSAGES_OVERALL.sample
+        end
+      end
 
       rows.map.with_index do |row, index|
-        "#{(index + 1)}. #{row[:display_name]} - #{row[tally_key]} words"
+        "#{(index + 1)}. **#{row[:display_name]}** - #{row[tally_key]} words"
       end.join("\n")
     end
 
