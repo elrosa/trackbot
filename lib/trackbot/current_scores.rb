@@ -23,11 +23,11 @@ module Trackbot
     end
 
     def best_three_yesterday
-      top_by(:day_tally)
+      top_by(:day_words)
     end
 
     def best_three_overall
-      @best_three_overall ||= top_by(:total_tally)
+      @best_three_overall ||= top_by(:total_words)
     end
 
     def best_overall
@@ -65,24 +65,32 @@ module Trackbot
 
     def participant_scores
       participants.map do |participant|
+        tallies = sum_tallies(participant["tallies"])
+
         {
           display_name: participant["displayName"],
-          day_tally: day_tally_count(participant),
-          total_tally: total_tally_count(participant)
+          **tallies
         }
       end
     end
 
-    def day_tally_count(participant)
-      participant["tallies"]
-        .select { |tally| tally["date"] == date.strftime("%Y-%m-%d") && tally["measure"] == "word" }
-        .sum { |tally| tally["count"] }
-    end
+    def sum_tallies(tallies)
+      tallies.each_with_object(
+        { day_words: 0, total_words: 0, day_time: 0, total_time: 0 }
+      ) do |tally, totals|
+        parsed_date = Date.parse(tally["date"])
+        next unless parsed_date <= date
 
-    def total_tally_count(participant)
-      participant["tallies"]
-        .select { |tally| Date.parse(tally["date"]) <= date && tally["measure"] == "word"}
-        .sum { |tally| tally["count"] }
+        key =
+          case tally["measure"]
+          when "word" then :words
+          when "time" then :time
+          else next
+          end
+
+        totals[:"total_#{key}"] += tally["count"]
+        totals[:"day_#{key}"] += tally["count"] if parsed_date == date
+      end
     end
   end
 end
