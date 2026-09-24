@@ -75,21 +75,14 @@ module Trackbot
     end
 
     def sum_tallies(tallies)
-      tallies.each_with_object(
-        { day_words: 0, total_words: 0, day_time: 0, total_time: 0 }
-      ) do |tally, totals|
+      tallies.each_with_object({ day_words: 0, total_words: 0 }) do |tally, totals|
+        next unless tally["measure"] == "word"
+
         parsed_date = Date.parse(tally["date"])
         next unless parsed_date <= date
 
-        key =
-          case tally["measure"]
-          when "word" then :words
-          when "time" then :time
-          else next
-          end
-
-        totals[:"total_#{key}"] += tally["count"]
-        totals[:"day_#{key}"] += tally["count"] if parsed_date == date
+        totals[:total_words] += tally["count"]
+        totals[:day_words] += tally["count"] if parsed_date == date
       end
     end
   end

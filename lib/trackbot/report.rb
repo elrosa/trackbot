@@ -61,9 +61,9 @@ module Trackbot
       <<~MESSAGE.strip
         ## #{scores.leaderboard_title}
         ### Yesterday's top writers
-        #{format_rankings(scores.best_three_yesterday, :day_words, :day_time)}
+        #{format_rankings(scores.best_three_yesterday, :day_words)}
         ### Overall standings (through #{format_date(scores.date)})
-        #{format_rankings(scores.best_three_overall, :total_words, :total_time)}
+        #{format_rankings(scores.best_three_overall, :total_words)}
 
       MESSAGE
     end
@@ -75,7 +75,7 @@ module Trackbot
         title: "#{scores.date.strftime("%B")} champion",
         description: <<~DESC.strip,
           # 👑 #{winner[:display_name]}
-          with **#{winner[:total_words]}** words written#{format_time_suffix(winner[:total_time])}!
+          with **#{winner[:total_words]}** words written!
 
           You've earned the naming rights for the **#{target_month}** leaderboard!
           *(and a well-deserved pat on the back)*
@@ -84,27 +84,14 @@ module Trackbot
       }
     end
 
-    def format_rankings(rows, words_key, time_key)
+    def format_rankings(rows, words_key)
       if rows.empty?
         return (words_key == :day_words ? EMPTY_MESSAGES_YESTERDAY : EMPTY_MESSAGES_OVERALL).sample
       end
 
       rows.map.with_index do |row, index|
-        "#{index + 1}. **#{row[:display_name]}** - #{row[words_key]} words#{format_time_suffix(row[time_key])}"
+        "#{index + 1}. **#{row[:display_name]}** - #{row[words_key]} words"
       end.join("\n")
-    end
-
-    def format_time_suffix(minutes)
-      return "" if minutes.nil? || minutes <= 0
-
-      hours = minutes / 60
-      mins = minutes % 60
-      parts = []
-      parts << "#{hours} #{hours == 1 ? "hour" : "hours"}" if hours > 0
-      parts << "#{mins} #{mins == 1 ? "minute" : "minutes"}" if mins > 0
-      return "" if parts.empty?
-
-      " in #{parts.join(" ")}"
     end
 
     def format_date(date)
